@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+
+# This hook ensures we follow Tim Pope's guidelines here:
+# https://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html
+
+# message is given to the hook as a file
+MSG_FILE="$1"
+
+SUMMARY_MAX=50
+BODY_MAX=72
+E_SUMMARY=1  # summary length exceeds 50 chars
+E_SEPARATOR=2  # no blank line separates summary from body
+E_BODY=3  # body width exceeds 72 chars
+
+summary_length=`head -1 | wc -m`  # always use 'm' option with wc to count characters not bytes
+if [ $summary_length -gt $SUMMARY_MAX ]; then
+    echo "Violation: Summary length exceeds 50 characters."
+    RETVAL=$E_SUMMARY
+fi
+
+if [ `wc -l $MSG_FILE` -gt 1 ]; then
+    if ! head -2 $MSG_FILE | tail -1 | grep -q '[^[:space:]]'; then
+        echo "Violation: No blank line separates summary from body."
+        RETVAL=$E_SEPARATOR
+    fi
+
+if [ `wc -l $MSG_FILE` -gt 2 ]; then
+    for line in `tail -n +3 $MSG_FILE`; do
+        if [ `wc -m line` -gt $BODY_MAX ]; then
+            echo "Body width exceeds 72 characters."
+            RETVAL=$E_BODY
+        fi
+    done
+fi
+
+if [ -z $RETVAL ]; then
+    exit 0
+else
+    exit $RETVAL
+fi
+
