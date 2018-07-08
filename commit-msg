@@ -3,7 +3,7 @@
 # This hook ensures we follow Tim Pope's guidelines here:
 # https://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html
 
-# message is given to the hook as a file
+# Git will pass the commit message to the hook as a file
 MSG_FILE="$1"
 
 SUMMARY_MAX=50
@@ -11,27 +11,44 @@ BODY_MAX=72
 E_SUMMARY=1  # summary length exceeds 50 chars
 E_SEPARATOR=2  # no blank line separates summary from body
 E_BODY=3  # body width exceeds 72 chars
+E_ONLY_COMMENTS=4  # message contains only comments
 
-summary_length=`head -1 | wc -m`  # always use 'm' option with wc to count characters not bytes
+
+grep -v '^#' "$MSG_FILE" > clean_msg_file.tmp
+if ! grep -v -q '^[[:space:]]*$' clean_msg_file.tmp; then
+     # nothing for our hook to check
+     rm clean_msg_file.tmp
+     exit $E_ONLY_COMMENTS
+fi
+
+summary_length=`head -1 clean_msg_file.tmp | wc -m`  # always use 'm' option with wc to count characters not bytes
 if [ $summary_length -gt $SUMMARY_MAX ]; then
     echo "Violation: Summary length exceeds 50 characters."
     RETVAL=$E_SUMMARY
 fi
 
-if [ `wc -l $MSG_FILE` -gt 1 ]; then
-    if ! head -2 $MSG_FILE | tail -1 | grep -q '[^[:space:]]'; then
+num_lines=`wc -l < clean_msg_file.tmp`
+echo "number of lines is $num_lines"
+
+if [ "$num_lines" -gt 1 ]; then
+    if ! head -2 clean_msg_file.tmp | tail -1 | grep -q '^[[:space:]]*$'; then
         echo "Violation: No blank line separates summary from body."
         RETVAL=$E_SEPARATOR
     fi
+fi
 
-if [ `wc -l $MSG_FILE` -gt 2 ]; then
-    for line in `tail -n +3 $MSG_FILE`; do
-        if [ `wc -m line` -gt $BODY_MAX ]; then
+if [ "$num_lines" -gt 2 ]; then
+    tail -n +3 clean_msg_file.tmp | while read line; do
+        num_chars=`echo $line | wc -m`
+        if [ $num_chars -gt $BODY_MAX ]; then
             echo "Body width exceeds 72 characters."
             RETVAL=$E_BODY
         fi
     done
 fi
+
+
+rm clean_msg_file.tmp
 
 if [ -z $RETVAL ]; then
     exit 0
