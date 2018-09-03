@@ -1,51 +1,62 @@
 #!/usr/bin/env bash
 
-# Register your pre-commit hooks here
-# in the order you want them executed.
-# They should be in the location:
-# .git/hooks/pre_commit
-hook_names = (
+######################
+# ---- SETTINGS ---- #
+######################
+
+# project name if you are using virtualenvwrapper
+PROJECT_NAME=""
+
+# run these hooks in this order
+hook_names=(
     'isort'
     'whitespace'
     'forbidden'
     'todo'
+    'flake8'
 )
 
-# if using virtualenv & virtualenvwrapper
-# set your project name here
-PROJECT_NAME=
 
-if [ -n "$PROJECT_NAME" ]; then
-    # Git will not understand the 'workon' command.
-    # This assumes you source your virtualenvwrapper
-    # script in bashrc
+#### END SETTINGS ####
+
+# check if commit just edits commit message,
+# i.e. is a "REWORD", and if so, skip checks
+if git diff --staged --quiet ; then
+    exit 0
+fi
+
+# if not inside virtual env, this will ensure
+# it activates, so hooks will run correctly,
+# e.g. isort hook needs to run inside the
+# virtual env so it can properly identify
+# 3rd party packages
+if [ -n "${PROJECT_NAME}" ]; then
     if [ -z "$VIRTUAL_ENV" ]; then
-        source ${HOME}/.bashrc
-        workon ${PROJECT_NAME}
+        # this assumes you source
+        # virtualenvwrapper.sh inside bashrc
+        source "${HOME}/.bashrc"
+        workon "${PROJECT_NAME}"
     fi
 fi
 
-# store exit code for each hook
-# so we can echo any feedback instead of 
-# failing immediately
 exit_codes=()
 
+# run each hook, storing the exit status, so
+# we identify all issues
 for hook_name in "${hook_names[@]}"; do
-    hook="./.git/hooks/pre_commit/$hook_name"
+    hook=".git/hooks/pre-commit-${hook_name}"
     if [ -x "$hook" ]; then
-        "$hook"
+        "./$hook"
         exit_codes+=($?)
     else
-        echo "$hook_name is not executable."
+        echo "$hook is not executable"
         exit_codes+=(1)
         continue
     fi
 done
 
-
-for code in "${exit_codes[@]}"; do
-  [ $code -eq 0 ] || exit $code
+for status in "${exit_codes[@]}"; do
+  [ "$status" -eq 0 ] || exit "$status"
 done
 
 exit 0
-

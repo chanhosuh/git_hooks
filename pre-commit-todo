@@ -1,12 +1,10 @@
 #!/usr/bin/env bash
 
 TODO='# TODO:'
-EMAIL=`git config user.email`
-SCRIPT_DIR=".git/hooks/todos"
 
+email=`git config user.email`
 
-> "${SCRIPT_DIR}/todos.txt"
-
+> todos/todos.tmp
 # first cycle through python modules with todos
 for file in `git grep -l "$TODO" | grep '\.py$'`; do
     # use git blame with options to ignore whitespace
@@ -19,11 +17,14 @@ for file in `git grep -l "$TODO" | grep '\.py$'`; do
         # replace committer info with email
         sed "s/(.*\(\<.*\>\).*)/\1/" | \
         # switch first two columns
-        awk '{ t = $1; $1 = $2; $2 = t; print; }'`" >> "${SCRIPT_DIR}/todos.txt"
+        awk '{ t = $1; $1 = $2; $2 = t; print; }'`" >> todos/todos.tmp
 done
 
-"${SCRIPT_DIR}/aggregate_todos.py"
+# format into markdown
+./todos/aggregate_todos.py
 
-git add "${SCRIPT_DIR}/README.md"
+# stage markdown output file
+git add 'todos/README.md'
 
+rm todos/todos.tmp
 exit 0

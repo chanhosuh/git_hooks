@@ -27,7 +27,7 @@ done
 # If no files left in index after formatting - fail
 ret=0
 if `git diff --staged --quiet`; then
-    1>&2 echo "isort: No files to commit after isort-ing."
+    1>&2 echo "isort: No files to commit after isort-ing"
     exit 1
 fi
 
