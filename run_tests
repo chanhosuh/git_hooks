@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+cp commit-msg .git/hooks/
+
+git checkout -b test_temp
+
+echo "bar = 1" >> tests/test_file.py
+git add tests/test_file.py
+
+
+if git commit --file tests/commit-msg/wide_body ; then
+    echo "FAILED wide_body test"
+fi
+
+if git commit --file tests/commit-msg/long_commit_summary ; then
+    echo "FAILED long_commit_summary test"
+fi
+
+if git commit --file tests/commit-msg/no_blank_line ; then
+    echo "FAILED no_blank_line test"
+fi
+
+
+git checkout master
+git branch -D test_temp
+
+rm .git/hooks/commit-msg

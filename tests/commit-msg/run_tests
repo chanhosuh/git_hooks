@@ -1,4 +1,0 @@
-
-git commit --file tests/commit-msg/wide_body
-git commit --file tests/commit-msg/long_commit_summary
-git commit --file tests/commit-msg/no_blank_line
