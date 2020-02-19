@@ -32,8 +32,4 @@ If these ideas sound unfamiliar, [this article](https://chris.beams.io/posts/git
 
 The `pre-commit` sub-hooks like `isort` and `black` will reformat and restage your files for you, so you never have to worry about formatting your imports or whether you have extra whitespace etc.
 
-`flake8` is a Python linter.  To not use it, simply remove it from the list of sub-hooks in the main `pre-commit` file.  `flake8` doesn't reformat your code, so it may fail and reject your commit.  In this case, you should go back and run `flake8` to see what the exact violations are and fix them.
-
-If you don't already have something you run before each commit for linting, e.g. a `make` command, it's recommended you create one, include not only `flake8` but `pylint`.
-
-Such checks are useful not only for enforcing a uniform code style, but they can catch overly complex logic or even serious errors, e.g. bad imports.
+`flake8` doesn't reformat your code, so it may fail and reject your commit.  In this case, you should go back and run `flake8` to see what the exact violations are and fix them.
