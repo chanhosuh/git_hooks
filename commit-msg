@@ -3,6 +3,12 @@
 # This hook ensures we follow Tim Pope's guidelines here:
 # https://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html
 
+trap cleanup EXIT SIGHUP SIGINT SIGTERM
+
+cleanup() {
+    rm clean_msg_file.tmp
+}
+
 # Git will pass the commit message to the hook as a file
 # MSG_FILE="$1"
 # Husky does not pass arguments to hooks, so we
@@ -26,7 +32,6 @@ RETVAL=0
 grep -v '^#' "$MSG_FILE" > clean_msg_file.tmp
 if ! grep -v -q '^[[:space:]]*$' clean_msg_file.tmp; then
      # nothing for our hook to check
-     rm clean_msg_file.tmp
      echo "$E_ONLY_COMMENTS_MSG"
      exit $E_ONLY_COMMENTS
 fi
@@ -57,6 +62,4 @@ if [ "$num_lines" -gt 2 ]; then
     done < <(tail -n +3 clean_msg_file.tmp)
 fi
 
-
-rm clean_msg_file.tmp
 exit $RETVAL
