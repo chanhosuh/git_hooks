@@ -44,7 +44,7 @@ for file in `git diff --name-only --cached --diff-filter=d | grep '\.py$'`; do
     fi
 done
 
-echo ${temp_files[@]} | xargs flake8 --config="$CONFIG_FILE" --quiet
+echo ${lint_files[@]} | xargs flake8 --config="$CONFIG_FILE" --quiet
 RET_VAL=$?
 
 
